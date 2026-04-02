@@ -1,0 +1,10 @@
+NT542.Q22-Group11/
+├── main.sh                 # File chạy chính
+├── modules/                # Thư mục chứa các script con của từng thành viên
+│   ├── iam_audit.sh
+│   ├── network_audit.sh
+│   └── ...
+├── utils/                  # Thư mục chứa các công cụ hỗ trợ
+│   └── logger.sh
+├── reports/                # Thư mục chứa file output báo cáo
+└── README.md

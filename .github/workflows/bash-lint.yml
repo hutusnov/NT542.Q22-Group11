@@ -1,0 +1,26 @@
+name: Bash Script CI
+on:
+  push:
+    branches: [ "main", "dev" ]
+  pull_request:
+    branches: [ "main", "dev" ]
+
+jobs:
+  check-syntax:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Bước 1: Tải code từ repo về máy chủ GitHub
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Bước 2: Cấp quyền thực thi cho các file script
+      - name: Make scripts executable
+        run: chmod +x main.sh modules/*.sh utils/*.sh
+
+      # Bước 3: Cài đặt và chạy Shellcheck để bắt lỗi code Bash
+      - name: Run Shellcheck
+        run: |
+          sudo apt-get install -y shellcheck
+          shellcheck main.sh utils/logger.sh modules/*.sh || true 
+          # (Thêm || true để nó chỉ cảnh báo chứ không chặn tiến trình)

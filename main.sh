@@ -7,9 +7,9 @@ source ./utils/logger.sh
 # ==========================================
 # CẤU HÌNH BIẾN MÔI TRƯỜNG
 # ==========================================
-PROJECT_ID="project-b446ffba-838e-4ec0-a4b"
-CLUSTER_NAME="your-cluster-name"
-LOCATION="your-cluster-location" # Ví dụ: asia-southeast1
+export PROJECT_ID="${PROJECT_ID:project-b446ffba-838e-4ec0-a4b}"
+export CLUSTER_NAME="${CLUSTER_NAME:vuln-autopilot-lab}"
+export LOCATION="${LOCATION:-asia-southeast1}"
 
 # ==========================================
 # HÀM KIỂM TRA PHỤ THUỘC (DEPENDENCIES)

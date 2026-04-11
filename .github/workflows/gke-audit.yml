@@ -1,0 +1,47 @@
+name: GKE Automated Security Audit (Zero Trust)
+
+on:
+  push:
+    branches: [ "main" ] # Script sẽ tự động chạy mỗi khi có code mới đẩy lên nhánh main
+
+# Cấp quyền tạo token OIDC cho GitHub Actions
+permissions:
+  contents: 'read'
+  id-token: 'write'
+
+jobs:
+  audit-gke:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Xác thực với GCP thông qua Workload Identity Federation (Không dùng Key tĩnh)
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: '${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}'
+          service_account: '${{ secrets.GCP_SERVICE_ACCOUNT }}'
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      # Chạy Script
+      - name: Run GKE Audit Script
+        env:
+          # Truyền biến môi trường vào main.sh
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          # Nhóm bạn nhớ thay tên cluster và location thực tế đang tạo trên GCP vào đây
+          CLUSTER_NAME: 'vuln-autopilot-lab'
+          LOCATION: 'asia-southeast1'
+          CI: 'true'
+        run: |
+          # Cấp quyền thực thi cho tất cả script
+          chmod +x main.sh utils/logger.sh modules/*.sh
+          
+          # Gọi file chạy chính
+          ./main.sh

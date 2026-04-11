@@ -69,16 +69,39 @@ main() {
     check_dependencies
     authenticate_gcp
 
-    # Chỗ này để gọi các script con do các thành viên khác viết
-    # Ví dụ:
-    # log_header "Chương 4.1: RBAC và Service Accounts (Thành viên 2)"
-    # bash ./modules/iam_audit.sh
-    
-    # log_header "Chương 4.3 & 5.4: Cluster Networking (Thành viên 3)"
-    # bash ./modules/network_audit.sh
-    
-    log_info "Hoàn tất quá trình rà soát!"
-}
+    # ---- BẮT ĐẦU NỐI MODULE ----
 
-# Gọi hàm main
-main
+    log_header "Chương 4.1: Quản lý Danh tính & Quyền hạn (IAM & RBAC)"
+    
+    # Gọi lần lượt các file do Thành viên 2 (RBAC) đã viết
+    if [ -f "./modules/cluster-admin.sh" ]; then
+        source ./modules/cluster-admin.sh
+    else
+        log_error "Không tìm thấy module cluster-admin.sh"
+    fi
+
+    if [ -f "./modules/secrets_access.sh" ]; then
+        source ./modules/secrets_access.sh
+    fi
+
+    if [ -f "./modules/wildcard_roles.sh" ]; then
+        source ./modules/wildcard_roles.sh
+    fi
+
+    if [ -f "./modules/default_service_accounts.sh" ]; then
+        source ./modules/default_service_accounts.sh
+    fi
+
+    log_header "Chương 5.5: Authentication and Authorization"
+    
+    if [ -f "./modules/gke_groups.sh" ]; then
+        source ./modules/gke_groups.sh
+    fi
+    
+    # Thêm các module của Networking, Workload, Image Security vào đây sau khi các thành viên khác code xong...
+    # source ./modules/network_audit.sh
+    # ...
+
+    log_info "======================================================="
+    log_pass "Hoàn tất quá trình rà soát toàn bộ hệ thống!"
+}

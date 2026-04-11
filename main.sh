@@ -33,24 +33,28 @@ check_dependencies() {
 authenticate_gcp() {
     log_info "Đang xác thực với Google Cloud Platform..."
     
-    # Kiểm tra xem đã có tài khoản gcloud active chưa
-    ACCOUNT=$(gcloud auth list --filter=status:ACTIVE --format="value(account)" 2>/dev/null)
-    
-    if [ -z "$ACCOUNT" ]; then
-        log_info "Chưa có phiên đăng nhập. Mở trình duyệt để xác thực..."
-        gcloud auth login
+    # Nếu đang chạy trên GitHub Actions (biến môi trường CI = true)
+    if [ "$CI" == "true" ]; then
+        log_info "Đang chạy trên môi trường CI/CD. Bỏ qua xác thực trình duyệt."
+        # GitHub Actions đã tự xác thực bằng Secret JSON, nên chỉ cần kết nối Cluster
     else
-        log_pass "Đã xác thực với tài khoản: $ACCOUNT"
+        # Chạy trên máy tính cá nhân
+        ACCOUNT=$(gcloud auth list --filter=status:ACTIVE --format="value(account)" 2>/dev/null)
+        if [ -z "$ACCOUNT" ]; then
+            log_info "Chưa có phiên đăng nhập. Mở trình duyệt để xác thực..."
+            gcloud auth login
+        else
+            log_pass "Đã xác thực với tài khoản: $ACCOUNT"
+        fi
     fi
 
     log_info "Kết nối tới cụm GKE Autopilot: $CLUSTER_NAME..."
-    # Lấy thông tin xác thực để kubectl có thể gọi API của Kubernetes
     gcloud container clusters get-credentials "$CLUSTER_NAME" --location="$LOCATION" --project="$PROJECT_ID" >/dev/null 2>&1
     
     if [ $? -eq 0 ]; then
         log_pass "Kết nối cụm thành công."
     else
-        log_error "Không thể kết nối cụm. Vui lòng kiểm tra lại PROJECT_ID, CLUSTER_NAME hoặc quyền truy cập."
+        log_error "Không thể kết nối cụm. Vui lòng kiểm tra lại PROJECT_ID, CLUSTER_NAME hoặc quyền IAM."
         exit 1
     fi
 }

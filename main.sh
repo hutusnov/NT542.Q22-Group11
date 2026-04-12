@@ -7,8 +7,8 @@ source ./utils/logger.sh
 # ==========================================
 # CẤU HÌNH BIẾN MÔI TRƯỜNG
 # ==========================================
-export PROJECT_ID="${PROJECT_ID:project-b446ffba-838e-4ec0-a4b}"
-export CLUSTER_NAME="${CLUSTER_NAME:vuln-autopilot-lab}"
+export PROJECT_ID="${PROJECT_ID:-project-b446ffba-838e-4ec0-a4b}"
+export CLUSTER_NAME="${CLUSTER_NAME:-vuln-autopilot-lab}"
 export LOCATION="${LOCATION:-asia-southeast1}"
 
 # ==========================================

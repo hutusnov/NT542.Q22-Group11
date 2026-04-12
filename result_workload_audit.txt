@@ -1,0 +1,192 @@
+
+╔══════════════════════════════════════════════════════╗
+║   CIS GKE Autopilot Benchmark v1.3.0 — Audit Tool   ║
+╚══════════════════════════════════════════════════════╝
+
+  Project : project-b446ffba-838e-4ec0-a4b
+  Cluster : vuln-autopilot-lab
+  Location: asia-southeast1
+  Thoi gian: 2026-04-12 03:43:18
+
+════════════════════════════════════════════════════
+  CIS 4.6.2 | Seccomp Profile = RuntimeDefault (Level 2)
+════════════════════════════════════════════════════
+
+  [INFO] Tổng số Pod tìm thấy: 58
+
+  ❌ Pod KHÔNG có Seccomp RuntimeDefault (21 pod):
+  [FAIL] gke-managed-cim/kube-state-metrics-0  [seccomp=UNSET]
+  [FAIL] kube-system/anetd-m-2dtv7  [seccomp=UNSET]
+  [FAIL] kube-system/anetd-m-55hhw  [seccomp=UNSET]
+  [FAIL] kube-system/anetd-m-jjmhv  [seccomp=UNSET]
+  [FAIL] kube-system/efficiency-daemon-h9ll7  [seccomp=UNSET]
+  [FAIL] kube-system/efficiency-daemon-mk64j  [seccomp=UNSET]
+  [FAIL] kube-system/efficiency-daemon-rp8c2  [seccomp=UNSET]
+  [FAIL] kube-system/egress-nat-controller-5d45985455-x67hd  [seccomp=UNSET]
+  [FAIL] kube-system/filestore-lock-release-controller-849dcb8db4-vxg4l  [seccomp=UNSET]
+  [FAIL] kube-system/gke-metadata-server-57scp  [seccomp=UNSET]
+  [FAIL] kube-system/gke-metadata-server-k96zp  [seccomp=UNSET]
+  [FAIL] kube-system/gke-metadata-server-kjkqn  [seccomp=UNSET]
+  [FAIL] kube-system/gke-system-balloon-pod-5pk9f  [seccomp=UNSET]
+  [FAIL] kube-system/gke-system-balloon-pod-fxbhc  [seccomp=UNSET]
+  [FAIL] kube-system/gke-system-balloon-pod-s96bb  [seccomp=UNSET]
+  [FAIL] kube-system/ip-masq-agent-4r4dr  [seccomp=UNSET]
+  [FAIL] kube-system/ip-masq-agent-bmcns  [seccomp=UNSET]
+  [FAIL] kube-system/ip-masq-agent-h4r5b  [seccomp=UNSET]
+  [FAIL] kube-system/node-local-dns-4scz8  [seccomp=UNSET]
+  [FAIL] kube-system/node-local-dns-mv77w  [seccomp=UNSET]
+  [FAIL] kube-system/node-local-dns-rf8k8  [seccomp=UNSET]
+
+  ✅ Pod ĐÃ có Seccomp RuntimeDefault (37 pod):
+  [PASS] default/honeypot-deployment-857b4c87bb-g5wcn  [seccomp=RuntimeDefault]
+  [PASS] gke-gmp-system/collector-qfkch  [seccomp=RuntimeDefault]
+  [PASS] gke-gmp-system/collector-vr8nn  [seccomp=RuntimeDefault]
+  [PASS] gke-gmp-system/collector-wcqw9  [seccomp=RuntimeDefault]
+  [PASS] gke-gmp-system/gmp-operator-5749c4c95b-qf59j  [seccomp=RuntimeDefault]
+  [PASS] kube-system/antrea-controller-horizontal-autoscaler-db9f7dbb7-2kj99  [seccomp=RuntimeDefault]
+  [PASS] kube-system/event-exporter-gke-58798f9d66-nkl95  [seccomp=RuntimeDefault]
+  [PASS] kube-system/filestore-node-4hv8x  [seccomp=RuntimeDefault]
+  [PASS] kube-system/filestore-node-8pn4b  [seccomp=RuntimeDefault]
+  [PASS] kube-system/filestore-node-9v4qh  [seccomp=RuntimeDefault]
+  [PASS] kube-system/fluentbit-gke-big-jjst6  [seccomp=RuntimeDefault]
+  [PASS] kube-system/fluentbit-gke-big-m7l8m  [seccomp=RuntimeDefault]
+  [PASS] kube-system/fluentbit-gke-big-x8cf8  [seccomp=RuntimeDefault]
+  [PASS] kube-system/gcsfusecsi-node-khcsx  [seccomp=RuntimeDefault]
+  [PASS] kube-system/gcsfusecsi-node-sqczg  [seccomp=RuntimeDefault]
+  [PASS] kube-system/gcsfusecsi-node-vplg6  [seccomp=RuntimeDefault]
+  [PASS] kube-system/gke-metrics-agent-hgm22  [seccomp=RuntimeDefault]
+  [PASS] kube-system/gke-metrics-agent-klmt2  [seccomp=RuntimeDefault]
+  [PASS] kube-system/gke-metrics-agent-m99f2  [seccomp=RuntimeDefault]
+  [PASS] kube-system/konnectivity-agent-76cf4cd56d-g9rgq  [seccomp=RuntimeDefault]
+  [PASS] kube-system/konnectivity-agent-76cf4cd56d-mwff9  [seccomp=RuntimeDefault]
+  [PASS] kube-system/konnectivity-agent-76cf4cd56d-pkpvw  [seccomp=RuntimeDefault]
+  [PASS] kube-system/konnectivity-agent-autoscaler-6ff984455d-wwzmz  [seccomp=RuntimeDefault]
+  [PASS] kube-system/kube-dns-6f6976fdcd-ksdtm  [seccomp=RuntimeDefault]
+  [PASS] kube-system/kube-dns-6f6976fdcd-pndgz  [seccomp=RuntimeDefault]
+  [PASS] kube-system/kube-dns-autoscaler-77499ffd4b-v7x67  [seccomp=RuntimeDefault]
+  [PASS] kube-system/l7-default-backend-7b754c9986-h9j4h  [seccomp=RuntimeDefault]
+  [PASS] kube-system/metrics-server-v1.35.1-6bc997cf85-lvcbc  [seccomp=RuntimeDefault]
+  [PASS] kube-system/netd-467qs  [seccomp=RuntimeDefault]
+  [PASS] kube-system/netd-dv2m8  [seccomp=RuntimeDefault]
+  [PASS] kube-system/netd-kbp7b  [seccomp=RuntimeDefault]
+  [PASS] kube-system/parallelstore-csi-node-6fqsk  [seccomp=RuntimeDefault]
+  [PASS] kube-system/parallelstore-csi-node-6vmh2  [seccomp=RuntimeDefault]
+  [PASS] kube-system/parallelstore-csi-node-mfw8k  [seccomp=RuntimeDefault]
+  [PASS] kube-system/pdcsi-node-4f54l  [seccomp=RuntimeDefault]
+  [PASS] kube-system/pdcsi-node-hvwlr  [seccomp=RuntimeDefault]
+  [PASS] kube-system/pdcsi-node-jplnm  [seccomp=RuntimeDefault]
+
+  ┌─ Tổng kết 4.6.2 ──────────────────────────
+  │  Tổng Pod  : 58
+  │  PASS      : 37
+  │  FAIL      : 21
+  └────────────────────────────────────────────
+
+  Remediation — thêm vào spec của Pod:
+    securityContext:
+      seccompProfile:
+        type: RuntimeDefault
+
+════════════════════════════════════════════════════
+  CIS 4.6.4 | Default Namespace không được sử dụng (Level 2)
+════════════════════════════════════════════════════
+
+  [INFO] Quét tất cả resource trong namespace default...
+
+  ❌ Phát hiện 5 resource người dùng trong namespace default:
+
+  KIND                           NAME
+  ────────────────────────────── ──────────────────────
+  [FAIL] [Pod] honeypot-deployment-857b4c87bb-g5wcn
+  [FAIL] [Deployment] honeypot-deployment
+  [FAIL] [ReplicaSet] honeypot-deployment-75f46dccdf
+  [FAIL] [ReplicaSet] honeypot-deployment-857b4c87bb
+  [FAIL] [ServiceAccount] god-mode-sa
+
+  [WARN] Hãy chuyển workload sang namespace riêng biệt.
+    kubectl create namespace <ten-namespace>
+
+  [INFO] Resource hệ thống mặc định (bỏ qua khi đánh giá):
+    [Service]        kubernetes
+    [ServiceAccount] default
+    [ConfigMap]      kube-root-ca.crt
+
+════════════════════════════════════════════════════
+  CIS 5.2.1 | Không dùng Compute Engine Default SA (Level 2)
+════════════════════════════════════════════════════
+
+  [INFO] Lấy thông tin serviceAccount từ cluster config...
+
+  [INFO] Danh sách Service Account tìm thấy:
+
+  SERVICE ACCOUNT                                         TRANG THAI
+  ─────────────────────────────────────────────────────── ──────────
+  default                                                 FAIL — DEFAULT SA
+
+  [FAIL] Cluster đang dùng Compute Engine Default Service Account!
+  [WARN] Default SA: 397101983481-compute@developer.gserviceaccount.com
+
+  Remediation:
+    gcloud iam service-accounts create gke-node-sa \
+      --display-name 'GKE Node SA' --project project-b446ffba-838e-4ec0-a4b
+    for ROLE in roles/logging.logWriter roles/monitoring.metricWriter roles/monitoring.viewer; do
+      gcloud projects add-iam-policy-binding project-b446ffba-838e-4ec0-a4b \
+        --member serviceAccount:gke-node-sa@project-b446ffba-838e-4ec0-a4b.iam.gserviceaccount.com \
+        --role $ROLE
+    done
+
+════════════════════════════════════════════════════
+  CIS 5.3.1 | Kubernetes Secrets — KMS Encryption (Level 2)
+════════════════════════════════════════════════════
+
+  [INFO] Lệnh: gcloud container clusters describe ... | jq '.databaseEncryption'
+
+  Raw output jq '.databaseEncryption':
+    {
+      "currentState": "CURRENT_STATE_DECRYPTED",
+      "state": "DECRYPTED"
+    }
+
+  state:               DECRYPTED
+  keyName:             (trong)
+
+  [FAIL] state=DECRYPTED — Secrets Encryption CHUA bat!
+
+  Remediation:
+    gcloud kms keyrings create gke-keyring \
+      --location asia-southeast1 --project project-b446ffba-838e-4ec0-a4b
+    gcloud kms keys create gke-secrets-key \
+      --location asia-southeast1 --keyring gke-keyring \
+      --purpose encryption --project project-b446ffba-838e-4ec0-a4b
+    KEY=projects/project-b446ffba-838e-4ec0-a4b/locations/asia-southeast1/keyRings/gke-keyring/cryptoKeys/gke-secrets-key
+    gcloud container clusters update vuln-autopilot-lab \
+      --location asia-southeast1 --database-encryption-key $KEY --project project-b446ffba-838e-4ec0-a4b
+
+════════════════════════════════════════════════════
+  CIS 5.6.1 | Persistent Disks — CMEK Encryption (Level 2)
+════════════════════════════════════════════════════
+
+  [INFO] Lệnh: kubectl get pv + gcloud compute disks describe | jq '.diskEncryptionKey.kmsKeyName'
+
+  [WARN] Khong co Persistent Volume nao trong cluster.
+  [WARN] GKE Autopilot chua dung PersistentDisk — CIS 5.6.1 khong ap dung.
+
+════════════════════════════════════════════════════
+  KET QUA TONG HOP — CIS GKE Autopilot Audit
+════════════════════════════════════════════════════
+
+  PASS : 37
+  FAIL : 23
+  WARN : 4
+
+  ┌─ Chi tiet tung muc ──────────────────────────────
+  │  4.6.2  Seccomp RuntimeDefault
+  │  4.6.4  Default Namespace
+  │  5.2.1  Compute Engine Default SA
+  │  5.3.1  KMS Secrets Encryption
+  │  5.6.1  CMEK Persistent Disk
+  └──────────────────────────────────────────────────
+
+  ✗ Co 23 kiem tra THAT BAI — can khac phuc.
+
+workload_audit.sh: line 313: ENDSCRIPT: command not found

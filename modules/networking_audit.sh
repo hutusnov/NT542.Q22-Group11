@@ -1,8 +1,9 @@
 #!/bin/bash
 
 # --- CẤU HÌNH ---
-CLUSTER_NAME="vuln-autopilot-lab"
-LOCATION="asia-southeast1"
+PROJECT_ID="${PROJECT_ID:-project-b446ffba-838e-4ec0-a4b}"
+CLUSTER_NAME="${CLUSTER_NAME:-vuln-autopilot-lab}"
+LOCATION="${LOCATION:-asia-southeast1}"
 
 # --- MÀU SẮC CHO ĐẦU RA ---
 GREEN='\033[0;32m'
@@ -17,7 +18,7 @@ echo "========================================================="
 
 echo -e "${YELLOW}[...] Đang tải thông tin cấu hình từ Google Cloud (vui lòng đợi vài giây)...${NC}"
 # TỐI ƯU HÓA: Lấy data 1 lần duy nhất để script chạy nhanh hơn
-CLUSTER_DATA=$(gcloud container clusters describe $CLUSTER_NAME --location $LOCATION --format=json 2>/dev/null)
+CLUSTER_DATA=$(gcloud container clusters describe "$CLUSTER_NAME" --location "$LOCATION" --project "$PROJECT_ID" --format=json 2>/dev/null)
 
 if [ -z "$CLUSTER_DATA" ]; then
     echo -e "${RED}Lỗi: Không thể lấy thông tin cụm. Vui lòng kiểm tra lại tên cụm hoặc kết nối!${NC}"

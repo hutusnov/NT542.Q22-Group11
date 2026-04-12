@@ -3,7 +3,6 @@
 # CIS GKE Autopilot Benchmark v1.3.0
 # Audit: 4.6.2 | 4.6.4 | 5.2.1 | 5.3.1 | 5.6.1
 # =============================================================================
-sed -i 's/set +e/set +e/' workload_audit.sh
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -310,4 +309,3 @@ audit_5_2_1
 audit_5_3_1
 audit_5_6_1
 summary
-ENDSCRIPT

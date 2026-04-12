@@ -7,8 +7,8 @@ source ./utils/logger.sh
 # ==========================================
 # CẤU HÌNH BIẾN MÔI TRƯỜNG
 # ==========================================
-export PROJECT_ID="${PROJECT_ID:project-b446ffba-838e-4ec0-a4b}"
-export CLUSTER_NAME="${CLUSTER_NAME:vuln-autopilot-lab}"
+export PROJECT_ID="${PROJECT_ID:-project-b446ffba-838e-4ec0-a4b}"
+export CLUSTER_NAME="${CLUSTER_NAME:-vuln-autopilot-lab}"
 export LOCATION="${LOCATION:-asia-southeast1}"
 
 # ==========================================
@@ -72,7 +72,7 @@ main() {
     # ---- BẮT ĐẦU NỐI MODULE ----
 
     log_header "Chương 4.1: Quản lý Danh tính & Quyền hạn (IAM & RBAC)"
-    
+
     # Gọi lần lượt các file do Thành viên 2 (RBAC) đã viết
     if [ -f "./modules/cluster-admin.sh" ]; then
         source ./modules/cluster-admin.sh
@@ -93,11 +93,11 @@ main() {
     fi
 
     log_header "Chương 5.5: Authentication and Authorization"
-    
+
     if [ -f "./modules/gke_groups.sh" ]; then
         source ./modules/gke_groups.sh
     fi
-    
+
     # Thêm các module của Networking, Workload, Image Security vào đây sau khi các thành viên khác code xong...
     # source ./modules/network_audit.sh
     # ...
@@ -105,3 +105,5 @@ main() {
     log_info "======================================================="
     log_pass "Hoàn tất quá trình rà soát toàn bộ hệ thống!"
 }
+
+main

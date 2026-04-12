@@ -98,9 +98,19 @@ main() {
         source ./modules/gke_groups.sh
     fi
 
-    # Thêm các module của Networking, Workload, Image Security vào đây sau khi các thành viên khác code xong...
-    # source ./modules/network_audit.sh
-    # ...
+    log_header "Chương 5.x: Networking Audit"
+    if [ -f "./modules/networking_audit.sh" ]; then
+        source ./modules/networking_audit.sh
+    else
+        log_error "Không tìm thấy module networking_audit.sh"
+    fi
+
+    log_header "Chương 5.x: Workload Audit"
+    if [ -f "./modules/workload_audit.sh" ]; then
+        source ./modules/workload_audit.sh
+    else
+        log_error "Không tìm thấy module workload_audit.sh"
+    fi
 
     log_info "======================================================="
     log_pass "Hoàn tất quá trình rà soát toàn bộ hệ thống!"

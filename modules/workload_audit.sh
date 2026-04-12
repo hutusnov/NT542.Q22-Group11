@@ -4,26 +4,24 @@
 # Audit: 4.6.2 | 4.6.4 | 5.2.1 | 5.3.1 | 5.6.1
 # =============================================================================
 
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
-BOLD='\033[1m'
-NC='\033[0m'
+# Nạp logger nếu script được chạy độc lập.
+if ! command -v log_info >/dev/null 2>&1; then
+  if [ -f "./utils/logger.sh" ]; then
+    source ./utils/logger.sh
+  elif [ -f "../utils/logger.sh" ]; then
+    source ../utils/logger.sh
+  fi
+fi
 
 PASS=0
 FAIL=0
 WARN=0
 
-pass() { echo -e "  ${GREEN}[PASS]${NC} $*"; ((PASS++)); }
-fail() { echo -e "  ${RED}[FAIL]${NC} $*"; ((FAIL++)); }
-warn() { echo -e "  ${YELLOW}[WARN]${NC} $*"; ((WARN++)); }
-info() { echo -e "  ${CYAN}[INFO]${NC} $*"; }
-divider() {
-  echo -e "\n${BOLD}${CYAN}════════════════════════════════════════════════════${NC}"
-  echo -e "${BOLD}${CYAN}  $*${NC}"
-  echo -e "${BOLD}${CYAN}════════════════════════════════════════════════════${NC}\n"
-}
+pass() { log_pass "$*"; ((PASS++)); }
+fail() { log_fail "$*"; ((FAIL++)); }
+warn() { echo -e "${YELLOW}[WARN]${NC} $*"; ((WARN++)); }
+info() { log_info "$*"; }
+divider() { log_header "$*"; }
 
 audit_4_6_2() {
   divider "CIS 4.6.2 | Seccomp Profile = RuntimeDefault (Level 2)"
@@ -57,12 +55,12 @@ audit_4_6_2() {
       annotation:  (.metadata.annotations."seccomp.security.alpha.kubernetes.io/pod" // "")
     }')
   if [[ ${#fail_list[@]} -gt 0 ]]; then
-    echo -e "  ${RED}${BOLD}❌ Pod KHÔNG có Seccomp RuntimeDefault (${#fail_list[@]} pod):${NC}"
+    fail "Pod KHÔNG có Seccomp RuntimeDefault (${#fail_list[@]} pod):"
     for item in "${fail_list[@]}"; do fail "$item"; done
     echo ""
   fi
   if [[ ${#pass_list[@]} -gt 0 ]]; then
-    echo -e "  ${GREEN}${BOLD}✅ Pod ĐÃ có Seccomp RuntimeDefault (${#pass_list[@]} pod):${NC}"
+    pass "Pod ĐÃ có Seccomp RuntimeDefault (${#pass_list[@]} pod):"
     for item in "${pass_list[@]}"; do pass "$item"; done
     echo ""
   fi
@@ -73,7 +71,7 @@ audit_4_6_2() {
   echo -e "  └────────────────────────────────────────────"
   if [[ ${#fail_list[@]} -gt 0 ]]; then
     echo ""
-    echo -e "  ${YELLOW}Remediation — thêm vào spec của Pod:${NC}"
+    info "Remediation - thêm vào spec của Pod:"
     echo    "    securityContext:"
     echo    "      seccompProfile:"
     echo    "        type: RuntimeDefault"
@@ -101,7 +99,7 @@ audit_4_6_4() {
   local count
   count=$(echo "$user_res" | grep -c '\[' 2>/dev/null || true)
   if [[ $count -gt 0 ]]; then
-    echo -e "  ${RED}${BOLD}❌ Phát hiện $count resource người dùng trong namespace default:${NC}"
+    fail "Phát hiện $count resource người dùng trong namespace default:"
     echo ""
     printf "  %-30s %s\n" "KIND" "NAME"
     printf "  %-30s %s\n" "──────────────────────────────" "──────────────────────"
@@ -158,7 +156,7 @@ audit_5_2_1() {
       --format="value(projectNumber)" 2>/dev/null || echo "???")
     warn "Default SA: ${project_number}-compute@developer.gserviceaccount.com"
     echo ""
-    echo -e "  ${YELLOW}Remediation:${NC}"
+    info "Remediation:"
     echo "    gcloud iam service-accounts create gke-node-sa \\"
     echo "      --display-name 'GKE Node SA' --project $PROJECT_ID"
     echo "    for ROLE in roles/logging.logWriter roles/monitoring.metricWriter roles/monitoring.viewer; do"
@@ -180,7 +178,7 @@ audit_5_3_1() {
     --location "$LOCATION" \
     --project  "$PROJECT_ID" \
     --format   json 2>/dev/null | jq '.databaseEncryption // {}')
-  echo -e "  ${BOLD}Raw output jq '.databaseEncryption':${NC}"
+  info "Raw output jq '.databaseEncryption':"
   echo "$db_enc" | jq . | sed 's/^/    /'
   echo ""
   local state key_name
@@ -202,7 +200,7 @@ audit_5_3_1() {
   else
     fail "state=$state — Secrets Encryption CHUA bat!"
     echo ""
-    echo -e "  ${YELLOW}Remediation:${NC}"
+    info "Remediation:"
     echo "    gcloud kms keyrings create gke-keyring \\"
     echo "      --location $LOCATION --project $PROJECT_ID"
     echo "    gcloud kms keys create gke-secrets-key \\"
@@ -270,13 +268,11 @@ audit_5_6_1() {
 }
 
 summary() {
-  echo -e "\n${BOLD}${CYAN}════════════════════════════════════════════════════${NC}"
-  echo -e "${BOLD}  KET QUA TONG HOP — CIS GKE Autopilot Audit${NC}"
-  echo -e "${BOLD}${CYAN}════════════════════════════════════════════════════${NC}"
+  log_header "KET QUA TONG HOP - CIS GKE Autopilot Audit"
   echo ""
-  echo -e "  ${GREEN}PASS${NC} : $PASS"
-  echo -e "  ${RED}FAIL${NC} : $FAIL"
-  echo -e "  ${YELLOW}WARN${NC} : $WARN"
+  log_info "PASS : $PASS"
+  log_info "FAIL : $FAIL"
+  log_info "WARN : $WARN"
   echo ""
   echo -e "  ┌─ Chi tiet tung muc ──────────────────────────────"
   echo -e "  │  4.6.2  Seccomp RuntimeDefault"
@@ -287,21 +283,19 @@ summary() {
   echo -e "  └──────────────────────────────────────────────────"
   echo ""
   if [[ $FAIL -eq 0 ]]; then
-    echo -e "  ${GREEN}${BOLD}✓ Cluster dat tat ca kiem tra CIS.${NC}"
+    pass "Cluster dat tat ca kiem tra CIS."
   else
-    echo -e "  ${RED}${BOLD}✗ Co $FAIL kiem tra THAT BAI — can khac phuc.${NC}"
+    fail "Co $FAIL kiem tra THAT BAI - can khac phuc."
   fi
   echo ""
 }
 
-echo -e "\n${BOLD}╔══════════════════════════════════════════════════════╗${NC}"
-echo -e "${BOLD}║   CIS GKE Autopilot Benchmark v1.3.0 — Audit Tool   ║${NC}"
-echo -e "${BOLD}╚══════════════════════════════════════════════════════╝${NC}"
+log_header "CIS GKE Autopilot Benchmark v1.3.0 - Audit Tool"
 echo ""
-echo -e "  Project : ${CYAN}${PROJECT_ID}${NC}"
-echo -e "  Cluster : ${CYAN}${CLUSTER_NAME}${NC}"
-echo -e "  Location: ${CYAN}${LOCATION}${NC}"
-echo -e "  Thoi gian: $(date '+%Y-%m-%d %H:%M:%S')"
+log_info "Project : $PROJECT_ID"
+log_info "Cluster : $CLUSTER_NAME"
+log_info "Location: $LOCATION"
+log_info "Thoi gian: $(date '+%Y-%m-%d %H:%M:%S')"
 
 audit_4_6_2
 audit_4_6_4

@@ -105,3 +105,5 @@ main() {
     log_info "======================================================="
     log_pass "Hoàn tất quá trình rà soát toàn bộ hệ thống!"
 }
+
+main

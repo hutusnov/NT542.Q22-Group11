@@ -35,13 +35,10 @@ jobs:
         env:
           # Truyền biến môi trường vào main.sh
           PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
-          # Nhóm bạn nhớ thay tên cluster và location thực tế đang tạo trên GCP vào đây
           CLUSTER_NAME: 'vuln-autopilot-lab'
           LOCATION: 'asia-southeast1'
           CI: 'true'
         run: |
-          # Cấp quyền thực thi cho tất cả script
           chmod +x main.sh utils/logger.sh modules/*.sh
           
-          # Gọi file chạy chính
           ./main.sh

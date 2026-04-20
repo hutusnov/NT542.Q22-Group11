@@ -4,6 +4,7 @@ NT542.Q22-Group11/
 │   ├── cluster-admin.sh
 │   ├── default_service_accounts.sh
 │   ├── gke_groups.sh
+│   ├── image_audit.sh
 │   ├── networking_audit.sh
 │   ├── secrets_access.sh
 │   ├── wildcard_roles.sh

@@ -112,6 +112,13 @@ main() {
         log_error "Không tìm thấy module workload_audit.sh"
     fi
 
+    log_header "Chương 5.1 & 5.7: Image Security Audit"
+    if [ -f "./modules/image_audit.sh" ]; then
+        source ./modules/image_audit.sh
+    else
+        log_error "Không tìm thấy module image_audit.sh"
+    fi
+
     log_info "======================================================="
     log_pass "Hoàn tất quá trình rà soát toàn bộ hệ thống!"
 }

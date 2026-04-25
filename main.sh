@@ -108,39 +108,12 @@ main() {
     export_csv  "$OUTPUT_CSV"
     export_html "$OUTPUT_HTML"
 
-<<<<<<< Updated upstream
-    if [ -f "./modules/secrets_access.sh" ]; then
-        source ./modules/secrets_access.sh
-    fi
-
-    if [ -f "./modules/wildcard_roles.sh" ]; then
-        source ./modules/wildcard_roles.sh
-    fi
-
-    if [ -f "./modules/default_service_accounts.sh" ]; then
-        source ./modules/default_service_accounts.sh
-    fi
-
-    log_header "Chương 5.5: Authentication and Authorization"
-
-    if [ -f "./modules/gke_groups.sh" ]; then
-        source ./modules/gke_groups.sh
-    fi
-
-    # Thêm các module của Networking, Workload, Image Security vào đây sau khi các thành viên khác code xong...
-    # source ./modules/network_audit.sh
-    # ...
-
-    log_info "======================================================="
-    log_pass "Hoàn tất quá trình rà soát toàn bộ hệ thống!"
-=======
     echo ""
     log_pass "$(t ALL_DONE)"
     echo ""
     log_info "📄 CSV  → $OUTPUT_CSV"
     log_info "🌐 HTML → $OUTPUT_HTML"
     echo ""
->>>>>>> Stashed changes
 }
 
 main

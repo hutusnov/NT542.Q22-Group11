@@ -22,9 +22,9 @@ source "${SCRIPT_DIR}/utils/reporter.sh"
 # ==========================================
 # CẤU HÌNH BIẾN MÔI TRƯỜNG
 # ==========================================
-export PROJECT_ID="${PROJECT_ID:-project-b446ffba-838e-4ec0-a4b}"
-export CLUSTER_NAME="${CLUSTER_NAME:-vuln-autopilot-lab}"
-export LOCATION="${LOCATION:-asia-southeast1}"
+export PROJECT_ID="${PROJECT_ID:-$(gcloud config get-value project 2>/dev/null)}"
+export CLUSTER_NAME="${CLUSTER_NAME:-$(kubectl config current-context 2>/dev/null | awk -F'_' '{print $4}')}"
+export LOCATION="${LOCATION:-$(kubectl config current-context 2>/dev/null | awk -F'_' '{print $3}')}"
 export AUDIT_LANG="${AUDIT_LANG:-vi}"
 
 # Timestamp dùng cho tên file output

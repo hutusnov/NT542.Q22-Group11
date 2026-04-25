@@ -1,7 +1,7 @@
 # Lịch Phân Công Công Việc — NT542.Q22, Nhóm 11
 
 **Dự án:** Framework Kiểm tra Bảo mật GKE theo CIS GKE Autopilot Benchmark v1.3.0  
-**Công cụ:** `main.sh` (Bash) + 4 Modules + Utils (Logger, I18n, Reporter)
+**Công cụ:** `main.sh` (Bash) + 5 Modules + Utils (Logger, I18n, Reporter)
 
 ---
 
@@ -66,25 +66,36 @@
 
 ---
 
-## Giai đoạn VI — Hoàn thiện Framework
+## Giai đoạn VI — Lập trình Module 5: Auto Remediation
+
+**Script:** `modules/module5_remediation.sh`
 
 | STT | Công việc | Trạng thái |
 |-----|-----------|-----------|
-| 6.1 | Viết `utils/i18n.sh`: hệ thống quản lý ngôn ngữ đầu ra (vi/en) với `cis_title()`, `mod_header()`, `t()` | ✅ Hoàn thành |
-| 6.2 | Ráp 4 module vào Core Framework (`main.sh`) — entry point duy nhất, hỗ trợ `AUDIT_LANG=en` | ✅ Hoàn thành |
-| 6.3 | Viết `utils/reporter.sh`: xuất báo cáo CSV (Excel-compatible) và HTML (dark mode dashboard) | ✅ Hoàn thành |
-| 6.4 | System Test: Chạy tool trên cụm Lab — lưu output HTML/CSV làm bằng chứng cho báo cáo | ⏳ Đang thực hiện |
-| 6.5 | Chuẩn hoá thư mục: xoá file cũ, đổi tên module, đồng bộ Git | ✅ Hoàn thành |
+| 6.1 | Lập trình tính năng đọc mảng kết quả kiểm tra `AUDIT_RESULTS` | ✅ Hoàn thành |
+| 6.2 | Tự động sinh `output/remediation.sh` với các lệnh gcloud/kubectl vá lỗi cho các mục bị FAIL | ✅ Hoàn thành |
 
 ---
 
-## Giai đoạn VII — Báo cáo
+## Giai đoạn VII — Hoàn thiện Framework
 
 | STT | Công việc | Trạng thái |
 |-----|-----------|-----------|
-| 7.1 | Viết báo cáo kỹ thuật: mô tả kiến trúc, phương pháp, kết quả từng mục CIS | ⏳ Đang thực hiện |
-| 7.2 | Tổng hợp file Word, làm Slide thuyết trình & quay video demo | ⬜ Chưa bắt đầu |
-| 7.3 | Kiểm tra format, review nội dung nhóm | ⬜ Chưa bắt đầu |
+| 7.1 | Viết `utils/i18n.sh`: hệ thống quản lý ngôn ngữ đầu ra (vi/en) với `cis_title()`, `mod_header()`, `t()` | ✅ Hoàn thành |
+| 7.2 | Ráp 5 module vào Core Framework (`main.sh`) — entry point duy nhất, hỗ trợ `AUDIT_LANG=en` | ✅ Hoàn thành |
+| 7.3 | Viết `utils/reporter.sh`: xuất báo cáo CSV (Excel-compatible) và HTML (dark mode dashboard) | ✅ Hoàn thành |
+| 7.4 | System Test: Chạy tool trên cụm Lab — lưu output HTML/CSV/Remediation làm bằng chứng cho báo cáo | ⏳ Đang thực hiện |
+| 7.5 | Chuẩn hoá thư mục: xoá file cũ, đổi tên module, đồng bộ Git | ✅ Hoàn thành |
+
+---
+
+## Giai đoạn VIII — Báo cáo
+
+| STT | Công việc | Trạng thái |
+|-----|-----------|-----------|
+| 8.1 | Viết báo cáo kỹ thuật: mô tả kiến trúc, phương pháp, kết quả từng mục CIS | ⏳ Đang thực hiện |
+| 8.2 | Tổng hợp file Word, làm Slide thuyết trình & quay video demo | ⬜ Chưa bắt đầu |
+| 8.3 | Kiểm tra format, review nội dung nhóm | ⬜ Chưa bắt đầu |
 
 ---
 
@@ -97,7 +108,8 @@ NT542.Q22-Group11/
 │   ├── module1_iam_rbac.sh        # CIS 4.1.1–4.1.10, 5.5.1 (8 mục)
 │   ├── module2_networking.sh      # CIS 4.3.1, 5.4.1–5.4.5  (6 mục)
 │   ├── module3_workload.sh        # CIS 4.6.2, 4.6.4, 5.2.1, 5.3.1, 5.6.1 (5 mục)
-│   └── module4_image.sh           # CIS 5.1.1–5.1.4, 5.7.1  (5 mục)
+│   ├── module4_image.sh           # CIS 5.1.1–5.1.4, 5.7.1  (5 mục)
+│   └── module5_remediation.sh     # Sinh file remediation.sh
 ├── utils/
 │   ├── logger.sh                  # Màu sắc, hàm log, record_result
 │   ├── i18n.sh                    # Bilingual: cis_title(), mod_header(), t()

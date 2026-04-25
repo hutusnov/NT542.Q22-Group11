@@ -1,60 +1,79 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# =============================================================================
+# main.sh — CIS GKE Autopilot Benchmark v1.3.0 Audit Tool (Entry Point)
+# =============================================================================
+# Cách dùng:
+#   bash main.sh                          # Chạy với ngôn ngữ mặc định (vi)
+#   AUDIT_LANG=en bash main.sh            # Chạy với ngôn ngữ tiếng Anh
+#   PROJECT_ID=my-proj CLUSTER_NAME=my-cluster bash main.sh
+#
+# Kết quả xuất ra:
+#   output/gke_audit_YYYYMMDD_HHMMSS.csv
+#   output/gke_audit_YYYYMMDD_HHMMSS.html
+# =============================================================================
 
-# Load các hàm từ logger.sh
-source ./utils/logger.sh
+# Xác định đường dẫn gốc của script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Kiểm tra môi trường, xác thực với Google Cloud và gọi các module khác.
+# --- Nạp tiện ích (i18n được nạp tự động bên trong logger.sh) ---
+source "${SCRIPT_DIR}/utils/logger.sh"
+source "${SCRIPT_DIR}/utils/reporter.sh"
+
 # ==========================================
 # CẤU HÌNH BIẾN MÔI TRƯỜNG
 # ==========================================
 export PROJECT_ID="${PROJECT_ID:-project-b446ffba-838e-4ec0-a4b}"
 export CLUSTER_NAME="${CLUSTER_NAME:-vuln-autopilot-lab}"
 export LOCATION="${LOCATION:-asia-southeast1}"
+export AUDIT_LANG="${AUDIT_LANG:-vi}"
+
+# Timestamp dùng cho tên file output
+_TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+OUTPUT_DIR="${SCRIPT_DIR}/output"
+OUTPUT_CSV="${OUTPUT_DIR}/gke_audit_${_TIMESTAMP}.csv"
+OUTPUT_HTML="${OUTPUT_DIR}/gke_audit_${_TIMESTAMP}.html"
 
 # ==========================================
-# HÀM KIỂM TRA PHỤ THUỘC (DEPENDENCIES)
+# KIỂM TRA PHỤ THUỘC
 # ==========================================
 check_dependencies() {
-    log_info "Đang kiểm tra các công cụ phụ thuộc..."
-    
+    log_info "$(t CHECKING_DEPS)"
     local deps=("gcloud" "kubectl" "jq")
     for cmd in "${deps[@]}"; do
         if ! command -v "$cmd" &> /dev/null; then
-            log_error "Không tìm thấy '$cmd'. Vui lòng cài đặt trước khi chạy script."
+            log_error "$(printf "$(t DEP_MISSING)" "$cmd")"
             exit 1
         fi
     done
-    log_pass "Tất cả công cụ (gcloud, kubectl, jq) đã sẵn sàng."
+    log_pass "$(t DEPS_OK)"
 }
 
 # ==========================================
-# HÀM XÁC THỰC VÀ KẾT NỐI GCP
+# XÁC THỰC VÀ KẾT NỐI GCP
 # ==========================================
 authenticate_gcp() {
-    log_info "Đang xác thực với Google Cloud Platform..."
-    
-    # Nếu đang chạy trên GitHub Actions (biến môi trường CI = true)
-    if [ "$CI" == "true" ]; then
-        log_info "Đang chạy trên môi trường CI/CD. Bỏ qua xác thực trình duyệt."
-        # GitHub Actions đã tự xác thực bằng Secret JSON, nên chỉ cần kết nối Cluster
+    log_info "$(t AUTH_GCP)"
+
+    if [[ "$CI" == "true" ]]; then
+        log_info "$(t AUTH_CI)"
     else
-        # Chạy trên máy tính cá nhân
+        local ACCOUNT
         ACCOUNT=$(gcloud auth list --filter=status:ACTIVE --format="value(account)" 2>/dev/null)
-        if [ -z "$ACCOUNT" ]; then
-            log_info "Chưa có phiên đăng nhập. Mở trình duyệt để xác thực..."
+        if [[ -z "$ACCOUNT" ]]; then
+            log_info "$(t AUTH_NO_SESSION)"
             gcloud auth login
         else
-            log_pass "Đã xác thực với tài khoản: $ACCOUNT"
+            log_pass "$(printf "$(t AUTH_OK)" "$ACCOUNT")"
         fi
     fi
 
-    log_info "Kết nối tới cụm GKE Autopilot: $CLUSTER_NAME..."
-    gcloud container clusters get-credentials "$CLUSTER_NAME" --location="$LOCATION" --project="$PROJECT_ID" >/dev/null 2>&1
-    
-    if [ $? -eq 0 ]; then
-        log_pass "Kết nối cụm thành công."
+    log_info "$(printf "$(t CONNECT_CLUSTER)" "$CLUSTER_NAME")"
+    if gcloud container clusters get-credentials "$CLUSTER_NAME" \
+        --location="$LOCATION" \
+        --project="$PROJECT_ID" > /dev/null 2>&1; then
+        log_pass "$(t CONNECT_OK)"
     else
-        log_error "Không thể kết nối cụm. Vui lòng kiểm tra lại PROJECT_ID, CLUSTER_NAME hoặc quyền IAM."
+        log_error "$(t CONNECT_FAIL)"
         exit 1
     fi
 }
@@ -64,22 +83,32 @@ authenticate_gcp() {
 # ==========================================
 main() {
     clear
-    log_header "CIS GKE AUTOPILOT BENCHMARK V1.3.0 AUDIT TOOL"
-    
+    log_header "$(t MAIN)"
+
+    log_info "Project  : $PROJECT_ID"
+    log_info "Cluster  : $CLUSTER_NAME"
+    log_info "Location : $LOCATION"
+    log_info "Language : $(t LANG_CURRENT)"
+    log_info "Time     : $(date '+%Y-%m-%d %H:%M:%S')"
+    echo ""
+
     check_dependencies
     authenticate_gcp
 
-    # ---- BẮT ĐẦU NỐI MODULE ----
+    # ---- CHẠY 4 MODULE ----
+    source "${SCRIPT_DIR}/modules/module1_iam_rbac.sh"
+    source "${SCRIPT_DIR}/modules/module2_networking.sh"
+    source "${SCRIPT_DIR}/modules/module3_workload.sh"
+    source "${SCRIPT_DIR}/modules/module4_image.sh"
 
-    log_header "Chương 4.1: Quản lý Danh tính & Quyền hạn (IAM & RBAC)"
+    # ---- TỔNG KẾT & XUẤT BÁO CÁO ----
+    print_summary_table
 
-    # Gọi lần lượt các file do Thành viên 2 (RBAC) đã viết
-    if [ -f "./modules/cluster-admin.sh" ]; then
-        source ./modules/cluster-admin.sh
-    else
-        log_error "Không tìm thấy module cluster-admin.sh"
-    fi
+    mkdir -p "$OUTPUT_DIR"
+    export_csv  "$OUTPUT_CSV"
+    export_html "$OUTPUT_HTML"
 
+<<<<<<< Updated upstream
     if [ -f "./modules/secrets_access.sh" ]; then
         source ./modules/secrets_access.sh
     fi
@@ -104,6 +133,14 @@ main() {
 
     log_info "======================================================="
     log_pass "Hoàn tất quá trình rà soát toàn bộ hệ thống!"
+=======
+    echo ""
+    log_pass "$(t ALL_DONE)"
+    echo ""
+    log_info "📄 CSV  → $OUTPUT_CSV"
+    log_info "🌐 HTML → $OUTPUT_HTML"
+    echo ""
+>>>>>>> Stashed changes
 }
 
 main

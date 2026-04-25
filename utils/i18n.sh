@@ -23,6 +23,9 @@ declare -A _CIS_TITLE_VI=(
     ["4_1_2"]="CIS 4.1.2 | Hạn chế quyền truy cập Secrets"
     ["4_1_3"]="CIS 4.1.3 | Hạn chế dùng wildcard (*) trong Roles & ClusterRoles"
     ["4_1_4"]="CIS 4.1.4 | Default Service Account không được tự động mount token"
+    ["4_1_5"]="CIS 4.1.5 | Service Account Tokens chỉ mount khi cần thiết"
+    ["4_1_6"]="CIS 4.1.6 | Tránh sử dụng nhóm system:masters"
+    ["4_1_7"]="CIS 4.1.7 | Hạn chế quyền Bind, Impersonate và Escalate"
     ["4_1_8"]="CIS 4.1.8 | Không bind role cho system:anonymous"
     ["4_1_9"]="CIS 4.1.9 | Không có binding non-default cho system:unauthenticated"
     ["4_1_10"]="CIS 4.1.10 | Không có binding non-default cho system:authenticated"
@@ -35,7 +38,10 @@ declare -A _CIS_TITLE_VI=(
     ["5_4_4"]="CIS 5.4.4 | Cluster dùng Private Nodes"
     ["5_4_5"]="CIS 5.4.5 | Google-managed SSL Certificates"
     # Module 3 — Workload, Secrets & Storage
+    ["4_4_1"]="CIS 4.4.1 | Sử dụng external secret storage (Khuyến nghị)"
+    ["4_6_1"]="CIS 4.6.1 | Phân tách quản trị bằng Namespaces"
     ["4_6_2"]="CIS 4.6.2 | Seccomp Profile = RuntimeDefault"
+    ["4_6_3"]="CIS 4.6.3 | Áp dụng Security Context cho Pods/Containers"
     ["4_6_4"]="CIS 4.6.4 | Không dùng namespace default cho workload"
     ["5_2_1"]="CIS 5.2.1 | Không dùng Compute Engine Default Service Account"
     ["5_3_1"]="CIS 5.3.1 | Secrets mã hoá bằng Cloud KMS (CMEK)"
@@ -46,6 +52,7 @@ declare -A _CIS_TITLE_VI=(
     ["5_1_3"]="CIS 5.1.3 | Cluster chỉ có quyền read-only vào Image Repository"
     ["5_1_4"]="CIS 5.1.4 | Binary Authorization đã bật"
     ["5_7_1"]="CIS 5.7.1 | Security Posture đã bật"
+    ["4_5_1"]="CIS 4.5.1 | Image Provenance (ImagePolicyWebhook)"
 )
 
 declare -A _CIS_TITLE_EN=(
@@ -54,6 +61,9 @@ declare -A _CIS_TITLE_EN=(
     ["4_1_2"]="CIS 4.1.2 | Minimize access to secrets"
     ["4_1_3"]="CIS 4.1.3 | Minimize wildcard use in Roles and ClusterRoles"
     ["4_1_4"]="CIS 4.1.4 | Default service accounts are not actively used"
+    ["4_1_5"]="CIS 4.1.5 | Service Account Tokens only mounted where necessary"
+    ["4_1_6"]="CIS 4.1.6 | Avoid use of system:masters group"
+    ["4_1_7"]="CIS 4.1.7 | Limit use of Bind, Impersonate and Escalate permissions"
     ["4_1_8"]="CIS 4.1.8 | Avoid bindings to system:anonymous"
     ["4_1_9"]="CIS 4.1.9 | Avoid non-default bindings to system:unauthenticated"
     ["4_1_10"]="CIS 4.1.10 | Avoid non-default bindings to system:authenticated"
@@ -66,7 +76,10 @@ declare -A _CIS_TITLE_EN=(
     ["5_4_4"]="CIS 5.4.4 | Clusters created with Private Nodes"
     ["5_4_5"]="CIS 5.4.5 | Use of Google-managed SSL Certificates"
     # Module 3 — Workload, Secrets & Storage
+    ["4_4_1"]="CIS 4.4.1 | Consider external secret storage"
+    ["4_6_1"]="CIS 4.6.1 | Create administrative boundaries between resources using namespaces"
     ["4_6_2"]="CIS 4.6.2 | Seccomp profile set to RuntimeDefault in pod definitions"
+    ["4_6_3"]="CIS 4.6.3 | Apply Security Context to Pods and Containers"
     ["4_6_4"]="CIS 4.6.4 | Default namespace should not be used"
     ["5_2_1"]="CIS 5.2.1 | GKE clusters not running using Compute Engine default service account"
     ["5_3_1"]="CIS 5.3.1 | Kubernetes Secrets encrypted using keys managed in Cloud KMS"
@@ -77,6 +90,7 @@ declare -A _CIS_TITLE_EN=(
     ["5_1_3"]="CIS 5.1.3 | Minimize cluster access to read-only for Image repositories"
     ["5_1_4"]="CIS 5.1.4 | Only trusted container images are used (Binary Authorization)"
     ["5_7_1"]="CIS 5.7.1 | Security Posture is enabled"
+    ["4_5_1"]="CIS 4.5.1 | Configure Image Provenance using ImagePolicyWebhook"
 )
 
 # =============================================================================

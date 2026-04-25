@@ -33,6 +33,13 @@ OUTPUT_DIR="${SCRIPT_DIR}/output"
 OUTPUT_CSV="${OUTPUT_DIR}/gke_audit_${_TIMESTAMP}.csv"
 OUTPUT_HTML="${OUTPUT_DIR}/gke_audit_${_TIMESTAMP}.html"
 
+DO_REMEDIATE=false
+for arg in "$@"; do
+    if [[ "$arg" == "--remediate" ]]; then
+        DO_REMEDIATE=true
+    fi
+done
+
 # ==========================================
 # KIỂM TRA PHỤ THUỘC
 # ==========================================
@@ -101,8 +108,36 @@ main() {
     source "${SCRIPT_DIR}/modules/module3_workload.sh"
     source "${SCRIPT_DIR}/modules/module4_image.sh"
 
+    # ---- THÊM CÁC MỤC KIỂM TRA THỦ CÔNG ----
+    log_info "Bổ sung 7 mục kiểm tra thủ công (Manual) vào báo cáo..."
+    if [[ "$AUDIT_LANG" == "en" ]]; then
+        record_result "4.1.5" "$(cis_title 4_1_5)" "MANUAL" "Review Pod specs for automountServiceAccountToken: false"
+        record_result "4.1.6" "$(cis_title 4_1_6)" "MANUAL" "Review RBAC for system:masters usage"
+        record_result "4.1.7" "$(cis_title 4_1_7)" "MANUAL" "Review ClusterRoles for bind/impersonate/escalate"
+        record_result "4.4.1" "$(cis_title 4_4_1)" "MANUAL" "Consider Secret Store CSI Driver or HashiCorp Vault"
+        record_result "4.5.1" "$(cis_title 4_5_1)" "MANUAL" "Verify ImagePolicyWebhook is configured"
+        record_result "4.6.1" "$(cis_title 4_6_1)" "MANUAL" "Verify namespace boundaries"
+        record_result "4.6.3" "$(cis_title 4_6_3)" "MANUAL" "Verify Pod Security Context (runAsNonRoot, etc.)"
+    else
+        record_result "4.1.5" "$(cis_title 4_1_5)" "MANUAL" "Kiểm tra thủ công: Đảm bảo Service Account Tokens chỉ mount khi cần thiết"
+        record_result "4.1.6" "$(cis_title 4_1_6)" "MANUAL" "Kiểm tra thủ công: Tránh sử dụng nhóm system:masters"
+        record_result "4.1.7" "$(cis_title 4_1_7)" "MANUAL" "Kiểm tra thủ công: Hạn chế quyền Bind, Impersonate và Escalate"
+        record_result "4.4.1" "$(cis_title 4_4_1)" "MANUAL" "Kiểm tra thủ công: Cân nhắc sử dụng external secret storage"
+        record_result "4.5.1" "$(cis_title 4_5_1)" "MANUAL" "Kiểm tra thủ công: Cấu hình Image Provenance với ImagePolicyWebhook"
+        record_result "4.6.1" "$(cis_title 4_6_1)" "MANUAL" "Kiểm tra thủ công: Tạo ranh giới quản trị bằng namespaces"
+        record_result "4.6.3" "$(cis_title 4_6_3)" "MANUAL" "Kiểm tra thủ công: Áp dụng Security Context cho Pods/Containers"
+    fi
+
     # ---- CHẠY MODULE 5 (REMEDIATION) ----
-    source "${SCRIPT_DIR}/modules/module5_remediation.sh"
+    if [[ "$DO_REMEDIATE" == "true" ]]; then
+        source "${SCRIPT_DIR}/modules/module5_remediation.sh"
+    else
+        if [[ "$AUDIT_LANG" == "en" ]]; then
+            log_info "Skipping Auto Remediation. Use --remediate flag to generate remediation script."
+        else
+            log_info "Bỏ qua tạo Remediation script. Dùng cờ --remediate để tự động tạo."
+        fi
+    fi
 
     # ---- TỔNG KẾT & XUẤT BÁO CÁO ----
     print_summary_table

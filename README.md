@@ -16,6 +16,12 @@ AUDIT_LANG=en bash main.sh
 
 # Chỉ định cluster cụ thể
 PROJECT_ID=my-project CLUSTER_NAME=my-cluster LOCATION=asia-southeast1 bash main.sh
+
+# Quét TẤT CẢ các cluster trong GCP Project
+export PROJECT_ID=my-project
+bash multi_audit.sh
+# Hoặc quét và tự động tạo script remediation
+bash multi_audit.sh --remediate
 ```
 
 Kết quả xuất ra thư mục `output/`:
@@ -41,7 +47,8 @@ Kết quả xuất ra thư mục `output/`:
 
 ```
 NT542.Q22-Group11/
-├── main.sh                        # Entry point duy nhất
+├── main.sh                        # Entry point duy nhất (kiểm tra 1 cluster)
+├── multi_audit.sh                 # Tool quét tất cả các cluster trong Project
 ├── modules/
 │   ├── module1_iam_rbac.sh        # CIS 4.1.1–4.1.10, 5.5.1
 │   ├── module2_networking.sh      # CIS 4.3.1, 5.4.1–5.4.5

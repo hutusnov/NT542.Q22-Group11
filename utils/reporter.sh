@@ -31,7 +31,7 @@ print_summary_table() {
     if [[ $TOTAL_FAIL -eq 0 ]]; then
         log_pass "$(t ALL_PASS)"
     else
-        log_fail "$(printf "$(t HAS_FAIL)" "$TOTAL_FAIL")"
+        log_fail "$(t HAS_FAIL "$TOTAL_FAIL")"
     fi
     echo ""
 }
@@ -55,7 +55,7 @@ export_csv() {
         done
     } > "$output_file"
 
-    log_pass "$(printf "$(t REPORT_CSV)" "$output_file")"
+    log_pass "$(t REPORT_CSV "$output_file")"
 }
 
 # =============================================================================
@@ -256,5 +256,5 @@ ROWEOF
 </html>
 HTMLEOF
 
-    log_pass "$(printf "$(t REPORT_HTML)" "$output_file")"
+    log_pass "$(t REPORT_HTML "$output_file")"
 }

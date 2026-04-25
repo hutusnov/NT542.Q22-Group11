@@ -24,7 +24,7 @@ Kết quả xuất ra thư mục `output/`:
 
 ---
 
-## 📋 Phạm vi kiểm tra — 31 mục / 4 Modules
+## 📋 Phạm vi kiểm tra — 31 mục / 5 Modules
 
 | Module | CIS IDs | Số mục |
 |--------|---------|--------|
@@ -32,6 +32,7 @@ Kết quả xuất ra thư mục `output/`:
 | M2: Networking | 4.3.1, 5.4.1, 5.4.2, 5.4.3, 5.4.4, 5.4.5 | 6 |
 | M3: Workload & Secrets | 4.6.2, 4.6.4, 5.2.1, 5.3.1, 5.6.1 | 5 |
 | M4: Image Security | 5.1.1, 5.1.2, 5.1.3, 5.1.4, 5.7.1 | 5 |
+| M5: Remediation | Tự động sinh script khắc phục các mục FAIL | - |
 | Manual-only | 4.1.5–4.1.7, 4.4.1, 4.5.1, 4.6.1, 4.6.3 | 7 |
 
 ---
@@ -45,7 +46,8 @@ NT542.Q22-Group11/
 │   ├── module1_iam_rbac.sh        # CIS 4.1.1–4.1.10, 5.5.1
 │   ├── module2_networking.sh      # CIS 4.3.1, 5.4.1–5.4.5
 │   ├── module3_workload.sh        # CIS 4.6.2, 4.6.4, 5.2.1, 5.3.1, 5.6.1
-│   └── module4_image.sh           # CIS 5.1.1–5.1.4, 5.7.1
+│   ├── module4_image.sh           # CIS 5.1.1–5.1.4, 5.7.1
+│   └── module5_remediation.sh     # Tự động sinh remediation script
 ├── utils/
 │   ├── logger.sh                  # Màu sắc, hàm log, record_result()
 │   ├── i18n.sh                    # Bilingual vi/en: cis_title(), t()

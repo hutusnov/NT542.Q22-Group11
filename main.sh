@@ -95,11 +95,14 @@ main() {
     check_dependencies
     authenticate_gcp
 
-    # ---- CHẠY 4 MODULE ----
+    # ---- CHẠY 4 MODULE CHÍNH ----
     source "${SCRIPT_DIR}/modules/module1_iam_rbac.sh"
     source "${SCRIPT_DIR}/modules/module2_networking.sh"
     source "${SCRIPT_DIR}/modules/module3_workload.sh"
     source "${SCRIPT_DIR}/modules/module4_image.sh"
+
+    # ---- CHẠY MODULE 5 (REMEDIATION) ----
+    source "${SCRIPT_DIR}/modules/module5_remediation.sh"
 
     # ---- TỔNG KẾT & XUẤT BÁO CÁO ----
     print_summary_table

@@ -48,7 +48,7 @@ check_dependencies() {
     local deps=("gcloud" "kubectl" "jq")
     for cmd in "${deps[@]}"; do
         if ! command -v "$cmd" &> /dev/null; then
-            log_error "$(printf "$(t DEP_MISSING)" "$cmd")"
+            log_error "$(t DEP_MISSING "$cmd")"
             exit 1
         fi
     done
@@ -69,12 +69,14 @@ authenticate_gcp() {
         if [[ -z "$ACCOUNT" ]]; then
             log_info "$(t AUTH_NO_SESSION)"
             gcloud auth login
-        else
-            log_pass "$(printf "$(t AUTH_OK)" "$ACCOUNT")"
+        fi
+        ACCOUNT=$(gcloud config get-value account 2>/dev/null)
+        if [[ -n "$ACCOUNT" ]]; then
+            log_pass "$(t AUTH_OK "$ACCOUNT")"
         fi
     fi
 
-    log_info "$(printf "$(t CONNECT_CLUSTER)" "$CLUSTER_NAME")"
+    log_info "$(t CONNECT_CLUSTER "$CLUSTER_NAME")"
     if gcloud container clusters get-credentials "$CLUSTER_NAME" \
         --location="$LOCATION" \
         --project="$PROJECT_ID" > /dev/null 2>&1; then

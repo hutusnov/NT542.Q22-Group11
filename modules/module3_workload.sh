@@ -294,4 +294,4 @@ audit_5_2_1
 audit_5_3_1
 audit_5_6_1
 
-log_info "$(printf "$(t DONE_MODULE)" "$(mod_header M3)")"
+log_info "$(t DONE_MODULE "$(mod_header M3)")"

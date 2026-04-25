@@ -130,4 +130,4 @@ else
 fi
 
 echo ""
-log_info "$(printf "$(t DONE_MODULE)" "$(mod_header M5)")"
+log_info "$(t DONE_MODULE "$(mod_header M5)")"

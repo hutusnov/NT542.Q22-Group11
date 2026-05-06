@@ -251,7 +251,7 @@ audit_5_7_1() {
     if [[ $posture_ok -eq 1 && $vuln_ok -eq 1 ]]; then
         record_result "5.7.1" "$(cis_title 5_7_1)" "PASS" "Security Posture: $posture_mode, Vulnerability: $vuln_mode"
     elif [[ $posture_ok -eq 1 ]]; then
-        record_result "5.7.1" "$(cis_title 5_7_1)" "MANUAL" "Posture: $posture_mode (OK), VulnMode: $vuln_mode (consider upgrading)"
+        record_result "5.7.1" "$(cis_title 5_7_1)" "WARN" "Posture: $posture_mode (OK), VulnMode: $vuln_mode (consider upgrading)"
     else
         log_info  "$(t REMEDIATION)"
         echo "    gcloud container clusters update $CLUSTER_NAME --location $LOCATION \\"

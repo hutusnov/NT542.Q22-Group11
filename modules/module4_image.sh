@@ -154,6 +154,8 @@ audit_5_1_3() {
         record_result "5.1.3" "$(cis_title 5_1_3)" "PASS" "No write-level IAM bindings on Artifact Registry repos"
     else
         log_manual "Write-level bindings found — manual review required to confirm necessity."
+        log_info "$(t MANUAL_INSTRUCTION)"
+        echo "    # $(t REMEDIATION) Ensure that write access is strictly necessary for the listed service accounts."
         record_result "5.1.3" "$(cis_title 5_1_3)" "MANUAL" "Write-level IAM bindings exist on one or more repos"
     fi
     echo ""
@@ -196,6 +198,8 @@ audit_5_1_4() {
             ;;
         *)
             log_manual "Binary Authorization mode '$bin_auth_mode' — manual review required."
+            log_info "$(t MANUAL_INSTRUCTION)"
+            echo "    # $(t REMEDIATION) Verify the current binary authorization mode is intentional and meets security requirements."
             record_result "5.1.4" "$(cis_title 5_1_4)" "MANUAL" "Unknown evaluationMode: $bin_auth_mode"
             ;;
     esac

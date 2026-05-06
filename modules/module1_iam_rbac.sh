@@ -53,6 +53,9 @@ audit_4_1_1() {
             record_result "4.1.1" "$(cis_title 4_1_1)" "FAIL" "Binding to non-system account: $user_bindings"
         else
             log_manual "Found $count cluster-admin binding(s) — all to system accounts. Verify manually."
+            log_info "$(t MANUAL_INSTRUCTION)"
+            echo "    kubectl get clusterrolebinding -o json | jq -r '.items[] | select(.roleRef.name == \"cluster-admin\") | .metadata.name'"
+            echo "    # $(t REMEDIATION) Verify that the listed system accounts legitimately need cluster-admin access."
             record_result "4.1.1" "$(cis_title 4_1_1)" "MANUAL" "Manual review required: $count binding(s) found"
         fi
     fi

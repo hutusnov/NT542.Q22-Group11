@@ -97,7 +97,7 @@ main() {
     log_info "Project  : $PROJECT_ID"
     log_info "Cluster  : $CLUSTER_NAME"
     log_info "Location : $LOCATION"
-    log_info "Language : $(t LANG_CURRENT)"
+    log_info "$(t LANG_CURRENT)"
     log_info "Time     : $(date '+%Y-%m-%d %H:%M:%S')"
     echo ""
 
@@ -114,70 +114,104 @@ main() {
     log_info "Bổ sung 7 mục kiểm tra thủ công (Manual) vào báo cáo..."
     echo ""
 
-    # 4.1.5
-    log_manual "$(cis_title 4_1_5)"
-    log_info "$(t MANUAL_INSTRUCTION)"
-    echo "    kubectl get pods -A -o custom-columns=NAME:.metadata.name,NS:.metadata.namespace,AUTOMOUNT:.spec.automountServiceAccountToken"
-    echo "    # $(t REMEDIATION) Ensure pods explicitly set automountServiceAccountToken: false if not using Kubernetes API."
-    echo ""
-
-    # 4.1.6
-    log_manual "$(cis_title 4_1_6)"
-    log_info "$(t MANUAL_INSTRUCTION)"
-    echo "    kubectl get clusterrolebindings -o json | jq -r '.items[] | select(.subjects[]?.name == \"system:masters\") | .metadata.name'"
-    echo "    # $(t REMEDIATION) Remove bindings to the system:masters group."
-    echo ""
-
-    # 4.1.7
-    log_manual "$(cis_title 4_1_7)"
-    log_info "$(t MANUAL_INSTRUCTION)"
-    echo "    kubectl get clusterroles -o json | jq -r '.items[] | select(.rules[]?.verbs[]? | test(\"bind|impersonate|escalate\")) | .metadata.name'"
-    echo "    # $(t REMEDIATION) Restrict these permissions to trusted administrators only."
-    echo ""
-
-    # 4.4.1
-    log_manual "$(cis_title 4_4_1)"
-    log_info "$(t MANUAL_INSTRUCTION)"
-    echo "    kubectl get pods -A | grep -E \"vault|external-secrets|csi\""
-    echo "    # $(t REMEDIATION) Consider deploying External Secrets Operator or Secrets Store CSI Driver."
-    echo ""
-
-    # 4.5.1
-    log_manual "$(cis_title 4_5_1)"
-    log_info "$(t MANUAL_INSTRUCTION)"
-    echo "    kubectl get validatingwebhookconfigurations"
-    echo "    # $(t REMEDIATION) Verify if an admission controller is validating image provenance."
-    echo ""
-
-    # 4.6.1
-    log_manual "$(cis_title 4_6_1)"
-    log_info "$(t MANUAL_INSTRUCTION)"
-    echo "    kubectl get namespaces"
-    echo "    # $(t REMEDIATION) Ensure workloads are segregated into dedicated namespaces."
-    echo ""
-
-    # 4.6.3
-    log_manual "$(cis_title 4_6_3)"
-    log_info "$(t MANUAL_INSTRUCTION)"
-    echo "    kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{\"\\t\"}{.metadata.name}{\"\\t\"}{.spec.securityContext}{\"\\n\"}{end}'"
-    echo "    # $(t REMEDIATION) Ensure Pods and Containers apply strict Security Contexts."
-    echo ""
-
     if [[ "$AUDIT_LANG" == "en" ]]; then
+        log_subheader "$(cis_title 4_1_5)"
+        log_manual "Manual Check Required"
+        log_info "$(t MANUAL_INSTRUCTION)"
+        echo "    kubectl get pods -A -o custom-columns=NAME:.metadata.name,NS:.metadata.namespace,AUTOMOUNT:.spec.automountServiceAccountToken"
+        echo "    # $(t REMEDIATION) Ensure pods explicitly set automountServiceAccountToken: false if not using Kubernetes API."
         record_result "4.1.5" "$(cis_title 4_1_5)" "MANUAL" "Review Pod specs for automountServiceAccountToken: false"
+
+        log_subheader "$(cis_title 4_1_6)"
+        log_manual "Manual Check Required"
+        log_info "$(t MANUAL_INSTRUCTION)"
+        echo "    kubectl get clusterrolebindings -o json | jq -r '.items[] | select(.subjects[]?.name == \"system:masters\") | .metadata.name'"
+        echo "    # $(t REMEDIATION) Remove bindings to the system:masters group."
         record_result "4.1.6" "$(cis_title 4_1_6)" "MANUAL" "Review RBAC for system:masters usage"
+
+        log_subheader "$(cis_title 4_1_7)"
+        log_manual "Manual Check Required"
+        log_info "$(t MANUAL_INSTRUCTION)"
+        echo "    kubectl get clusterroles -o json | jq -r '.items[] | select(.rules[]?.verbs[]? | test(\"bind|impersonate|escalate\")) | .metadata.name'"
+        echo "    # $(t REMEDIATION) Restrict these permissions to trusted administrators only."
         record_result "4.1.7" "$(cis_title 4_1_7)" "MANUAL" "Review ClusterRoles for bind/impersonate/escalate"
+
+        log_subheader "$(cis_title 4_4_1)"
+        log_manual "Manual Check Required"
+        log_info "$(t MANUAL_INSTRUCTION)"
+        echo "    kubectl get pods -A | grep -E \"vault|external-secrets|csi\""
+        echo "    # $(t REMEDIATION) Consider deploying External Secrets Operator or Secrets Store CSI Driver."
         record_result "4.4.1" "$(cis_title 4_4_1)" "MANUAL" "Consider Secret Store CSI Driver or HashiCorp Vault"
+
+        log_subheader "$(cis_title 4_5_1)"
+        log_manual "Manual Check Required"
+        log_info "$(t MANUAL_INSTRUCTION)"
+        echo "    kubectl get validatingwebhookconfigurations"
+        echo "    # $(t REMEDIATION) Verify if an admission controller is validating image provenance."
         record_result "4.5.1" "$(cis_title 4_5_1)" "MANUAL" "Verify ImagePolicyWebhook is configured"
+
+        log_subheader "$(cis_title 4_6_1)"
+        log_manual "Manual Check Required"
+        log_info "$(t MANUAL_INSTRUCTION)"
+        echo "    kubectl get namespaces"
+        echo "    # $(t REMEDIATION) Ensure workloads are segregated into dedicated namespaces."
         record_result "4.6.1" "$(cis_title 4_6_1)" "MANUAL" "Verify namespace boundaries"
+
+        log_subheader "$(cis_title 4_6_3)"
+        log_manual "Manual Check Required"
+        log_info "$(t MANUAL_INSTRUCTION)"
+        echo "    kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{\"\\t\"}{.metadata.name}{\"\\t\"}{.spec.securityContext}{\"\\n\"}{end}'"
+        echo "    # $(t REMEDIATION) Ensure Pods and Containers apply strict Security Contexts."
         record_result "4.6.3" "$(cis_title 4_6_3)" "MANUAL" "Verify Pod Security Context (runAsNonRoot, etc.)"
+
     else
+        log_subheader "$(cis_title 4_1_5)"
+        log_manual "Yêu cầu kiểm tra thủ công"
+        log_info "$(t MANUAL_INSTRUCTION)"
+        echo "    kubectl get pods -A -o custom-columns=NAME:.metadata.name,NS:.metadata.namespace,AUTOMOUNT:.spec.automountServiceAccountToken"
+        echo "    # $(t REMEDIATION) Đảm bảo các pod có thiết lập automountServiceAccountToken: false nếu không cần giao tiếp với API."
         record_result "4.1.5" "$(cis_title 4_1_5)" "MANUAL" "Kiểm tra thủ công: Đảm bảo Service Account Tokens chỉ mount khi cần thiết"
+
+        log_subheader "$(cis_title 4_1_6)"
+        log_manual "Yêu cầu kiểm tra thủ công"
+        log_info "$(t MANUAL_INSTRUCTION)"
+        echo "    kubectl get clusterrolebindings -o json | jq -r '.items[] | select(.subjects[]?.name == \"system:masters\") | .metadata.name'"
+        echo "    # $(t REMEDIATION) Xóa các binding không cần thiết trỏ tới nhóm system:masters."
         record_result "4.1.6" "$(cis_title 4_1_6)" "MANUAL" "Kiểm tra thủ công: Tránh sử dụng nhóm system:masters"
+
+        log_subheader "$(cis_title 4_1_7)"
+        log_manual "Yêu cầu kiểm tra thủ công"
+        log_info "$(t MANUAL_INSTRUCTION)"
+        echo "    kubectl get clusterroles -o json | jq -r '.items[] | select(.rules[]?.verbs[]? | test(\"bind|impersonate|escalate\")) | .metadata.name'"
+        echo "    # $(t REMEDIATION) Giới hạn các quyền rủi ro cao này chỉ cho admin thực sự."
         record_result "4.1.7" "$(cis_title 4_1_7)" "MANUAL" "Kiểm tra thủ công: Hạn chế quyền Bind, Impersonate và Escalate"
+
+        log_subheader "$(cis_title 4_4_1)"
+        log_manual "Yêu cầu kiểm tra thủ công"
+        log_info "$(t MANUAL_INSTRUCTION)"
+        echo "    kubectl get pods -A | grep -E \"vault|external-secrets|csi\""
+        echo "    # $(t REMEDIATION) Cân nhắc triển khai External Secrets Operator hoặc Secrets Store CSI Driver."
         record_result "4.4.1" "$(cis_title 4_4_1)" "MANUAL" "Kiểm tra thủ công: Cân nhắc sử dụng external secret storage"
+
+        log_subheader "$(cis_title 4_5_1)"
+        log_manual "Yêu cầu kiểm tra thủ công"
+        log_info "$(t MANUAL_INSTRUCTION)"
+        echo "    kubectl get validatingwebhookconfigurations"
+        echo "    # $(t REMEDIATION) Kiểm tra xem có Admission Controller nào đang xác thực nguồn gốc image không."
         record_result "4.5.1" "$(cis_title 4_5_1)" "MANUAL" "Kiểm tra thủ công: Cấu hình Image Provenance với ImagePolicyWebhook"
+
+        log_subheader "$(cis_title 4_6_1)"
+        log_manual "Yêu cầu kiểm tra thủ công"
+        log_info "$(t MANUAL_INSTRUCTION)"
+        echo "    kubectl get namespaces"
+        echo "    # $(t REMEDIATION) Đảm bảo workloads được triển khai vào các namespace phân lập."
         record_result "4.6.1" "$(cis_title 4_6_1)" "MANUAL" "Kiểm tra thủ công: Tạo ranh giới quản trị bằng namespaces"
+
+        log_subheader "$(cis_title 4_6_3)"
+        log_manual "Yêu cầu kiểm tra thủ công"
+        log_info "$(t MANUAL_INSTRUCTION)"
+        echo "    kubectl get pods -A -o jsonpath='{range .items[*]}{.metadata.namespace}{\"\\t\"}{.metadata.name}{\"\\t\"}{.spec.securityContext}{\"\\n\"}{end}'"
+        echo "    # $(t REMEDIATION) Đảm bảo Pods và Containers có áp dụng các ràng buộc Security Context chặt chẽ."
         record_result "4.6.3" "$(cis_title 4_6_3)" "MANUAL" "Kiểm tra thủ công: Áp dụng Security Context cho Pods/Containers"
     fi
 

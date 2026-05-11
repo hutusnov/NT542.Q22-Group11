@@ -128,7 +128,11 @@ main() {
         ')
 
         local count
-        count=$(echo "$pods_automount" | grep -c "." 2>/dev/null || echo 0)
+        if [[ -z "$pods_automount" ]]; then
+            count=0
+        else
+            count=$(echo "$pods_automount" | wc -l | tr -d ' ')
+        fi
 
         if [[ $count -eq 0 ]]; then
             log_pass "All Pods have automountServiceAccountToken disabled."
@@ -162,7 +166,11 @@ main() {
         ')
 
         local count
-        count=$(echo "$risky_roles" | grep -c "." 2>/dev/null || echo 0)
+        if [[ -z "$risky_roles" ]]; then
+            count=0
+        else
+            count=$(echo "$risky_roles" | wc -l | tr -d ' ')
+        fi
 
         if [[ $count -eq 0 ]]; then
             log_pass "No ClusterRole found with bind/impersonate/escalate permissions."
@@ -310,7 +318,11 @@ main() {
         ')
 
         local count
-        count=$(echo "$pods_no_sc" | grep -c "." 2>/dev/null || echo 0)
+        if [[ -z "$pods_no_sc" ]]; then
+            count=0
+        else
+            count=$(echo "$pods_no_sc" | wc -l | tr -d ' ')
+        fi
 
         local total
         total=$(kubectl get pods -A --no-headers 2>/dev/null | wc -l | tr -d ' ')

@@ -111,80 +111,117 @@ main() {
     source "${SCRIPT_DIR}/modules/module4_image.sh"
 
     # ---- THÊM CÁC MỤC KIỂM TRA THỦ CÔNG (có thực thi lệnh) ----
-    log_info "Bổ sung 6 mục kiểm tra thủ công (Manual) vào báo cáo..."
+    log_info "Bổ sung 3 mục kiểm tra tự động (Automated) và 3 mục thủ công (Manual) vào báo cáo..."
     echo ""
 
     # =========================================================================
-    # CIS 4.1.5 — Ensure SA Tokens are only mounted where necessary (Manual)
+    # CIS 4.1.5 — Ensure SA Tokens are only mounted where necessary (Automated)
     # =========================================================================
-    audit_manual_4_1_5() {
+    audit_4_1_5() {
         log_subheader "$(cis_title 4_1_5)"
 
-        local pods_automount
-        pods_automount=$(kubectl get pods -A -o json 2>/dev/null | jq -r '
+        # Whitelist: system namespaces legitimately need SA token access
+        local SYS_NS_PATTERN="^(kube-system|kube-public|kube-node-lease|gke-.*|gmp-.*|gke-managed-.*)$"
+
+        local all_automount
+        all_automount=$(kubectl get pods -A -o json 2>/dev/null | jq -r '
             .items[] | select(
                 (.spec.automountServiceAccountToken // true) == true
-            ) | "  \(.metadata.namespace)/\(.metadata.name)  [automount=true]"
+            ) | "\(.metadata.namespace)/\(.metadata.name)"
         ')
 
-        local count
-        if [[ -z "$pods_automount" ]]; then
-            count=0
-        else
-            count=$(echo "$pods_automount" | wc -l | tr -d ' ')
+        local total_automount=0
+        [[ -n "$all_automount" ]] && total_automount=$(echo "$all_automount" | wc -l | tr -d ' ')
+
+        # Filter: only flag user-namespace pods
+        local user_pods_automount=""
+        if [[ -n "$all_automount" ]]; then
+            user_pods_automount=$(echo "$all_automount" | while IFS='/' read -r ns pod; do
+                if ! [[ "$ns" =~ $SYS_NS_PATTERN ]]; then
+                    echo "  $ns/$pod  [automount=true]"
+                fi
+            done)
         fi
 
-        if [[ $count -eq 0 ]]; then
-            log_pass "All Pods have automountServiceAccountToken disabled."
-            record_result "4.1.5" "$(cis_title 4_1_5)" "MANUAL" "All Pods set automountServiceAccountToken: false"
+        local user_count=0
+        [[ -n "$user_pods_automount" ]] && user_count=$(echo "$user_pods_automount" | wc -l | tr -d ' ')
+
+        local sys_count=$(( total_automount - user_count ))
+
+        log_info "Total pods with automount=true: $total_automount (system: $sys_count, user: $user_count)"
+
+        if [[ $user_count -eq 0 ]]; then
+            log_pass "No user-namespace Pod has automountServiceAccountToken enabled."
+            [[ $sys_count -gt 0 ]] && log_info "($sys_count system pod(s) whitelisted — kube-system, gke-*, gmp-*)"
+            record_result "4.1.5" "$(cis_title 4_1_5)" "PASS" "No user-ns pod with automount=true ($sys_count system pods whitelisted)"
         else
-            log_manual "Found $count Pod(s) with automountServiceAccountToken: true (or default):"
-            echo "$pods_automount" | head -15
-            [[ $count -gt 15 ]] && echo "    ... and $(( count - 15 )) more"
+            log_fail "Found $user_count user-namespace Pod(s) with automountServiceAccountToken: true:"
+            echo "$user_pods_automount" | head -15
+            [[ $user_count -gt 15 ]] && echo "    ... and $(( user_count - 15 )) more"
             echo ""
             if [[ "$AUDIT_LANG" == "en" ]]; then
-                echo "    # $(t REMEDIATION) Ensure pods explicitly set automountServiceAccountToken: false if not using Kubernetes API."
+                echo "    # $(t REMEDIATION) Set automountServiceAccountToken: false in pod spec for pods that don't need Kubernetes API access."
             else
-                echo "    # $(t REMEDIATION) Đảm bảo các pod có thiết lập automountServiceAccountToken: false nếu không cần giao tiếp với API."
+                echo "    # $(t REMEDIATION) Đặt automountServiceAccountToken: false trong pod spec cho các pod không cần truy cập Kubernetes API."
             fi
-            record_result "4.1.5" "$(cis_title 4_1_5)" "MANUAL" "$count Pod(s) with automountServiceAccountToken: true — review required"
+            record_result "4.1.5" "$(cis_title 4_1_5)" "FAIL" "$user_count user-ns Pod(s) with automount=true"
         fi
         echo ""
     }
 
     # =========================================================================
-    # CIS 4.1.7 — Limit Bind, Impersonate and Escalate permissions (Manual)
+    # CIS 4.1.7 — Limit Bind, Impersonate and Escalate permissions (Automated)
     # =========================================================================
-    audit_manual_4_1_7() {
+    audit_4_1_7() {
         log_subheader "$(cis_title 4_1_7)"
 
-        local risky_roles
-        risky_roles=$(kubectl get clusterroles -o json 2>/dev/null | jq -r '
+        # Get all ClusterRoles with risky verbs, separated by system vs custom
+        local all_risky
+        all_risky=$(kubectl get clusterroles -o json 2>/dev/null | jq -r '
             .items[] | select(
                 .rules[]? | .verbs[]? | test("bind|impersonate|escalate")
-            ) | "  ClusterRole/\(.metadata.name)"
+            ) | .metadata.name
         ')
 
-        local count
-        if [[ -z "$risky_roles" ]]; then
-            count=0
-        else
-            count=$(echo "$risky_roles" | wc -l | tr -d ' ')
+        local total_risky=0
+        [[ -n "$all_risky" ]] && total_risky=$(echo "$all_risky" | wc -l | tr -d ' ')
+
+        # Separate system roles (system:* and known k8s built-ins) from custom
+        local custom_risky=""
+        local system_risky=""
+        if [[ -n "$all_risky" ]]; then
+            while IFS= read -r role; do
+                if [[ "$role" =~ ^system: ]]; then
+                    system_risky="${system_risky:+$system_risky
+}  ClusterRole/$role  [system]"
+                else
+                    custom_risky="${custom_risky:+$custom_risky
+}  ClusterRole/$role  [custom]"
+                fi
+            done <<< "$all_risky"
         fi
 
-        if [[ $count -eq 0 ]]; then
-            log_pass "No ClusterRole found with bind/impersonate/escalate permissions."
-            record_result "4.1.7" "$(cis_title 4_1_7)" "MANUAL" "No risky verbs found"
+        local custom_count=0
+        [[ -n "$custom_risky" ]] && custom_count=$(echo "$custom_risky" | wc -l | tr -d ' ')
+        local system_count=$(( total_risky - custom_count ))
+
+        log_info "ClusterRoles with bind/impersonate/escalate: $total_risky (system: $system_count, custom: $custom_count)"
+
+        if [[ $custom_count -eq 0 ]]; then
+            log_pass "No custom ClusterRole found with bind/impersonate/escalate permissions."
+            [[ $system_count -gt 0 ]] && log_info "($system_count system role(s) whitelisted — system:* built-in roles)"
+            record_result "4.1.7" "$(cis_title 4_1_7)" "PASS" "No custom role with risky verbs ($system_count system roles whitelisted)"
         else
-            log_manual "Found $count ClusterRole(s) with bind/impersonate/escalate:"
-            echo "$risky_roles"
+            log_fail "Found $custom_count custom ClusterRole(s) with bind/impersonate/escalate:"
+            echo "$custom_risky"
+            [[ $system_count -gt 0 ]] && echo "" && log_info "($system_count system role(s) whitelisted)"
             echo ""
             if [[ "$AUDIT_LANG" == "en" ]]; then
-                echo "    # $(t REMEDIATION) Restrict these permissions to trusted administrators only."
+                echo "    # $(t REMEDIATION) Remove bind/impersonate/escalate verbs from custom ClusterRoles, or restrict them to trusted admin accounts."
             else
-                echo "    # $(t REMEDIATION) Giới hạn các quyền rủi ro cao này chỉ cho admin thực sự."
+                echo "    # $(t REMEDIATION) Xóa các quyền bind/impersonate/escalate khỏi ClusterRole tùy chỉnh, hoặc giới hạn chỉ cho tài khoản admin đáng tin cậy."
             fi
-            record_result "4.1.7" "$(cis_title 4_1_7)" "MANUAL" "$count ClusterRole(s) with bind/impersonate/escalate — review required"
+            record_result "4.1.7" "$(cis_title 4_1_7)" "FAIL" "$custom_count custom ClusterRole(s) with risky verbs"
         fi
         echo ""
     }
@@ -199,7 +236,7 @@ main() {
         secret_pods=$(kubectl get pods -A --no-headers 2>/dev/null | grep -iE "vault|external-secrets|secret-store|csi-secrets" || true)
 
         if [[ -n "$secret_pods" ]]; then
-            log_pass "External secret management components detected:"
+            log_manual "External secret management components detected — verify configuration:"
             echo "$secret_pods" | sed 's/^/    /'
             record_result "4.4.1" "$(cis_title 4_4_1)" "MANUAL" "External secret pods found — verify configuration"
         else
@@ -287,7 +324,7 @@ main() {
         log_info "Total namespaces: $total (system) + $user_count (user-created)"
 
         if [[ $user_count -gt 0 ]]; then
-            log_pass "User-created namespaces detected — administrative boundaries exist."
+            log_manual "User-created namespaces detected — verify administrative boundaries are adequate."
             record_result "4.6.1" "$(cis_title 4_6_1)" "MANUAL" "$user_count user namespace(s) found — verify boundaries are adequate"
         else
             log_manual "Only system namespaces found — workloads may lack segregation."
@@ -302,56 +339,82 @@ main() {
     }
 
     # =========================================================================
-    # CIS 4.6.3 — Apply Security Context to Pods and Containers (Manual)
+    # CIS 4.6.3 — Apply Security Context to Pods and Containers (Automated)
     # =========================================================================
-    audit_manual_4_6_3() {
+    audit_4_6_3() {
         log_subheader "$(cis_title 4_6_3)"
-
-        local pods_no_sc
-        pods_no_sc=$(kubectl get pods -A -o json 2>/dev/null | jq -r '
-            .items[] | select(
-                (.spec.securityContext == null or .spec.securityContext == {})
-                and ([.spec.containers[]? | select(
-                    .securityContext == null or .securityContext == {}
-                )] | length > 0)
-            ) | "  \(.metadata.namespace)/\(.metadata.name)"
-        ')
-
-        local count
-        if [[ -z "$pods_no_sc" ]]; then
-            count=0
-        else
-            count=$(echo "$pods_no_sc" | wc -l | tr -d ' ')
-        fi
 
         local total
         total=$(kubectl get pods -A --no-headers 2>/dev/null | wc -l | tr -d ' ')
 
+        # Check each container for critical security context settings:
+        #   - runAsNonRoot: true (pod or container level)
+        #   - allowPrivilegeEscalation: false
+        #   - readOnlyRootFilesystem: true (recommended)
+        local pods_weak_sc
+        pods_weak_sc=$(kubectl get pods -A -o json 2>/dev/null | jq -r '
+            .items[] as $pod |
+            # Check pod-level securityContext
+            ($pod.spec.securityContext // {}) as $pod_sc |
+            # Check each container
+            [ $pod.spec.containers[]? |
+                (.securityContext // {}) as $csc |
+                {
+                    name: .name,
+                    runAsNonRoot: ($csc.runAsNonRoot // $pod_sc.runAsNonRoot // false),
+                    allowPrivEsc: (if $csc.allowPrivilegeEscalation == null then true else $csc.allowPrivilegeEscalation end),
+                    readOnlyFS: ($csc.readOnlyRootFilesystem // false)
+                } |
+                select(
+                    .runAsNonRoot != true or
+                    .allowPrivEsc != false or
+                    .readOnlyFS != true
+                )
+            ] |
+            select(length > 0) |
+            # Build detail string with missing fields
+            map(
+                .name + " [" +
+                ([ (if .runAsNonRoot != true then "runAsNonRoot" else empty end),
+                   (if .allowPrivEsc != false then "allowPrivEsc" else empty end),
+                   (if .readOnlyFS != true then "readOnlyFS" else empty end)
+                ] | join(",")) + "]"
+            ) as $details |
+            "  \($pod.metadata.namespace)/\($pod.metadata.name): \($details | join(", "))"
+        ')
+
+        local count=0
+        if [[ -n "$pods_weak_sc" ]]; then
+            count=$(echo "$pods_weak_sc" | wc -l | tr -d ' ')
+        fi
+
+        log_info "Checking $total Pod(s) for: runAsNonRoot, allowPrivilegeEscalation=false, readOnlyRootFilesystem"
+
         if [[ $count -eq 0 ]]; then
-            log_pass "All $total Pod(s) have Security Context configured."
-            record_result "4.6.3" "$(cis_title 4_6_3)" "MANUAL" "All $total Pods have Security Context"
+            log_pass "All $total Pod(s) have strict Security Context configured."
+            record_result "4.6.3" "$(cis_title 4_6_3)" "PASS" "All $total Pods have strict Security Context"
         else
-            log_manual "Found $count/$total Pod(s) without Security Context:"
-            echo "$pods_no_sc" | head -15
+            log_fail "Found $count/$total Pod(s) with weak/missing Security Context:"
+            echo "$pods_weak_sc" | head -15
             [[ $count -gt 15 ]] && echo "    ... and $(( count - 15 )) more"
             echo ""
             if [[ "$AUDIT_LANG" == "en" ]]; then
-                echo "    # $(t REMEDIATION) Ensure Pods and Containers apply strict Security Contexts (runAsNonRoot, readOnlyRootFilesystem, etc.)."
+                echo "    # $(t REMEDIATION) Apply strict Security Context: runAsNonRoot: true, allowPrivilegeEscalation: false, readOnlyRootFilesystem: true."
             else
-                echo "    # $(t REMEDIATION) Đảm bảo Pods và Containers có áp dụng các ràng buộc Security Context chặt chẽ (runAsNonRoot, readOnlyRootFilesystem, v.v.)."
+                echo "    # $(t REMEDIATION) Áp dụng Security Context chặt: runAsNonRoot: true, allowPrivilegeEscalation: false, readOnlyRootFilesystem: true."
             fi
-            record_result "4.6.3" "$(cis_title 4_6_3)" "MANUAL" "$count/$total Pod(s) missing Security Context — review required"
+            record_result "4.6.3" "$(cis_title 4_6_3)" "FAIL" "$count/$total Pod(s) with weak Security Context"
         fi
         echo ""
     }
 
-    # --- Thực thi 6 manual checks ---
-    audit_manual_4_1_5
-    audit_manual_4_1_7
+    # --- Thực thi 3 automated + 3 manual checks ---
+    audit_4_1_5
+    audit_4_1_7
     audit_manual_4_4_1
     audit_manual_4_5_1
     audit_manual_4_6_1
-    audit_manual_4_6_3
+    audit_4_6_3
 
     # ---- CHẠY MODULE 5 (REMEDIATION) ----
     if [[ "$DO_REMEDIATE" == "true" ]]; then

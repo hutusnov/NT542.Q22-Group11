@@ -148,8 +148,16 @@ audit_4_1_4() {
     ')
 
     local sa_count pods_count
-    sa_count=$(echo "$sa_automount"   | grep -c "." 2>/dev/null || echo 0)
-    pods_count=$(echo "$pods_default_sa" | grep -c "." 2>/dev/null || echo 0)
+    if [[ -z "$sa_automount" ]]; then
+        sa_count=0
+    else
+        sa_count=$(echo "$sa_automount" | wc -l | tr -d ' ')
+    fi
+    if [[ -z "$pods_default_sa" ]]; then
+        pods_count=0
+    else
+        pods_count=$(echo "$pods_default_sa" | wc -l | tr -d ' ')
+    fi
 
     if [[ $sa_count -eq 0 ]]; then
         log_pass "All default ServiceAccounts have automountServiceAccountToken disabled."

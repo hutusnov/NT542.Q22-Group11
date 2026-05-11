@@ -3,7 +3,7 @@
 # modules/module1_iam_rbac.sh
 # CIS GKE Autopilot Benchmark v1.3.0
 # Module 1: IAM & RBAC
-# Kiểm tra: 4.1.1 | 4.1.2 | 4.1.3 | 4.1.4 | 4.1.8 | 4.1.9 | 4.1.10 | 5.5.1
+# Kiểm tra: 4.1.1 | 4.1.2 | 4.1.3 | 4.1.4 | 4.1.6 | 4.1.8 | 4.1.9 | 4.1.10 | 5.5.1
 # =============================================================================
 
 # Nạp logger (và i18n tự động) nếu chạy độc lập
@@ -176,6 +176,33 @@ audit_4_1_4() {
 }
 
 # =============================================================================
+# CIS 4.1.6 — Avoid use of system:masters group
+# =============================================================================
+audit_4_1_6() {
+    log_subheader "$(cis_title 4_1_6)"
+
+    local masters_bindings
+    masters_bindings=$(kubectl get clusterrolebindings -o json 2>/dev/null | jq -r '
+        .items[] | select(.subjects[]? | .name == "system:masters")
+        | "  \(.kind)/\(.metadata.name) — role: \(.roleRef.name)"'
+    )
+
+    if [[ -z "$masters_bindings" ]]; then
+        log_pass "No ClusterRoleBinding found referencing system:masters group."
+        record_result "4.1.6" "$(cis_title 4_1_6)" "PASS" "No binding to system:masters group"
+    else
+        local count
+        count=$(echo "$masters_bindings" | grep -c "." || true)
+        log_fail "Found $count binding(s) referencing system:masters group:"
+        echo "$masters_bindings"
+        echo ""
+        log_info "$(t REMEDIATION) Remove bindings to the system:masters group."
+        record_result "4.1.6" "$(cis_title 4_1_6)" "FAIL" "$count binding(s) to system:masters group detected"
+    fi
+    echo ""
+}
+
+# =============================================================================
 # CIS 4.1.8 — Avoid bindings to system:anonymous
 # =============================================================================
 audit_4_1_8() {
@@ -291,6 +318,7 @@ audit_4_1_1
 audit_4_1_2
 audit_4_1_3
 audit_4_1_4
+audit_4_1_6
 audit_4_1_8
 audit_4_1_9
 audit_4_1_10
